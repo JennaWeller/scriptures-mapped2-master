@@ -1,17 +1,16 @@
 <!DOCTYPE html>
-<html>
+<html class="no-js" lang="">
     <head>
         <meta charset="utf-8"/>
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <title>The Scriptures Mapped, Jenna Weller</title>
+        <meta name="author" content="Jenna Weller">
+        <meta name="description" content="The Standard Works, Mapped">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <link href="https://fonts.googleapis.com/css2?family=League+Gothic&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <link rel="stylesheet" type="text/css" media="screen" href="./css/main.css"/>
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+        <link rel="stylesheet" type="text/css" media="screen" href="./css/style.css"/>
         <script src="./js/scriptures.js"></script>
-
     </head>
     <body>
         <div id='header'>
@@ -23,7 +22,7 @@
         </div>
         <div id='content'>
             <div id='scripturesAndNav'>
-                <div id='pageButtons' style="border-bottom:none"></div>
+                <div id='pageButtons'></div>
                 <div id='scriptures'></div>
             </div>
             <div id='map'></div>
@@ -32,23 +31,12 @@
             let map;
             let showLocation;
 
-            function initMap() {
-                map = new google.maps.Map(document.getElementById('map'), {
-                    center: {
-                        lat: 31.777444,
-                        lng: 35.234935
-                    },
-                    zoom: 8
-                });
-            }
-
-            function ready(eventHandler) {
-                "use strict";
-
-                if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
-                    eventHandler();
+ 
+            function ready(readyListener) {
+                if (document.readyState != 'loading') {
+                    readyListener();
                 } else {
-                    document.addEventListener("DOMContentLoaded", eventHandler);
+                    document.addEventListener("DOMContentLoaded", readyListener);
                 }
             }
 
@@ -61,6 +49,16 @@
                 showLocation = scriptures.showLocation;
                 changeHash = scriptures.changeHash;
             });
+            function initMap() {
+                map = new google.maps.Map(document.getElementById('map'), {
+                    center: {
+                        lat: 31.7683,
+                        lng: 35.2137
+                    },
+                    zoom: 8
+                });
+            }
+
         </script>
         <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBFg1tTWckcyN4OKDF5WIMbCzNDkt9SeKw&callback=initMap" async defer></script>
     </body>
