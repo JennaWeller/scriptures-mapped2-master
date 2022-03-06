@@ -1,10 +1,10 @@
 /*
 * FILE:     scriptures.js
-* AUTHOR:   Peter Garrow
-* Date:     Winter 2019
+* AUTHOR:   Jenna Weller
+* Date:     Winter 2022
 *
 * DESCRIPTION: Front-end JavaScript code for The Scriptures, Mapped.
-                IS 542, Winter 2019, Byu.
+                IS 542, Winter 2022, Byu.
 *
 */
 /*property
@@ -38,7 +38,10 @@ const scriptures = (function () {
    const SCRIPTURES = `<span>
                             <a onclick="changeHash()">The Scriptures</a>
                         </span>`;
+   const URL_BASE = "https://scriptures.byu.edu/";
+   const URL_BOOKS = `${URL_BASE}mapscrip/model/books.php`;
    const SCRIPTURES_URL = "https://scriptures.byu.edu/mapscrip/mapgetscrip.php";
+   const URL_VOLUMES = `${URL_BASE}mapscrip/model/volumes.php`;
    const TRANSITION_LIMIT = 3;
 
     /*---------------------------------------------------------------
@@ -46,8 +49,8 @@ const scriptures = (function () {
     */
     let books;
     let gmMarkers = [];
-    let next_chap = false;
-    let prev_chap = false;
+    let nextChap = false;
+    let prevChap = false;
     let retryDelay = 500;
     let transitions = 0;
     let transitioning = false;
@@ -106,16 +109,17 @@ const scriptures = (function () {
         if (!duplicates) {
 
             let marker = new google.maps.Marker({
+                animation: google.maps.Animation.DROP,
                 position: {lat: latitude, lng: longitude},
                 map,
                 title: placename,
                 label: {
-                    color: '#201000',
-                    strokeColor: '#fff8f0',
-                    fontWeight: 'bold',
+                    color: "#201000",
+                    strokeColor: "#fff8f0",
+                    fontWeight: "bold",
                     text: placename
                   },
-                animation: google.maps.Animation.DROP
+                
             });
 
             gmMarkers.push(marker);
@@ -257,16 +261,13 @@ const scriptures = (function () {
     };
 
     getNextCallback = function(chapterHTML) {   
-        document.querySelector('#scriptures .chapters .next_chap').innerHTML = chapterHTML;
-        // setupMarkers();
+        document.querySelector('#scriptures .chapters .nextChap').innerHTML = chapterHTML;
+
     };
 
     getPrevCallback = function(chapterHTML) {
-        document.querySelector('#scriptures .chapters .prev_chap').innerHTML = chapterHTML;
-        // setupMarkers();
+        document.querySelector('#scriptures .chapters .prevChap').innerHTML = chapterHTML;
     };
-
-    // NEED TO CHANGE THIS TO WORK FOR RIGHT AND LEFT AS WELL
     getScriptureCallback = function (chapterHTML) {
         document.querySelector('#scriptures .chapters .curr_chap').innerHTML = chapterHTML;
         setupMarkers();
@@ -279,8 +280,8 @@ const scriptures = (function () {
     };
 
     hideNextPrev = function() {
-        document.querySelector('#navButtons').innerHTML = '';
-        document.querySelector('#navButtons').style.height = 0;
+        document.querySelector('#pageButtons').innerHTML = '';
+        document.querySelector('#pageButtons').style.height = 0;
         document.querySelector('#scriptures').style.height = '100%';
     };
 
@@ -333,8 +334,8 @@ const scriptures = (function () {
         }
 
         generateBreadcrumb(book.parentBookId, bookId);
-        next_chap = false;
-        prev_chap = false;
+        nextChap = false;
+        prevChap = false;
     };
 
     navigateChapter = function(bookId, chapter) {
@@ -343,39 +344,32 @@ const scriptures = (function () {
             let book = books[bookId];
             let volume = volumes[book.parentBookId - 1];
 
-
-            // GET NEXT AND PREV  CHAPTERS AS WELL
-            // CHECK IF THEY EXIST FIRST
-            // IF NOT, DON'T GET THEM
-
-            // SLIDE
-
             if (!document.querySelector('.chapters')) {
                 document.querySelector('#scriptures').innerHTML = `
                                                             <div class='chapters'>
-                                                                <div class='prev_chap chap'></div>
+                                                                <div class='prevChap chap'></div>
                                                                 <div class='curr_chap chap'></div>
-                                                                <div class='next_chap chap'></div>
+                                                                <div class='nextChap chap'></div>
                                                             </div>`;
             }
 
             showNextPrev(bookId, chapter);
 
-            if (!next_chap && !prev_chap) {
+            if (!nextChap && !prevChap) {
                 ajax(encodedScriptureUrlParameters(bookId, chapter),
                     getScriptureCallback, getScriptureFailed, true);
             }
 
-            if (!next_chap) {
+            if (!nextChap) {
                 ajax(encodedScriptureUrlParameters(bookId, chapter + 1),
                     getNextCallback, getScriptureFailed, true);
-                next_chap = true;
+                nextChap = true;
             }
 
-            if (!prev_chap) {
+            if (!prevChap) {
                 ajax(encodedScriptureUrlParameters(bookId, chapter - 1),
                     getPrevCallback, getScriptureFailed, true);
-                prev_chap = true;
+                prevChap = true;
             }
             
 
@@ -408,8 +402,8 @@ const scriptures = (function () {
         document.querySelector('#scriptures').innerHTML = navContents;
 
         volumeId !== undefined ? generateBreadcrumb(volumeId) : generateBreadcrumb();
-        next_chap = false;
-        prev_chap = false;
+        nextChap = false;
+        prevChap = false;
     };
 
     nextChapter = function(bookId, chapter) {
@@ -537,6 +531,7 @@ const scriptures = (function () {
     };
 
     setupBounds = function () {
+         // I got this code from https://stackoverflow.com/questions/19304574/center-set-zoom-of-map-to-cover-all-visible-markers
         if (gmMarkers.length === 0) {
             map.setZoom(8);
             map.panTo({lat: 31.777444, lng: 35.234935});
@@ -554,9 +549,6 @@ const scriptures = (function () {
             });
 
             map.fitBounds(bounds);
-
-            // The code above was adapted by code from: https://stackoverflow.com/questions/19304574/center-set-zoom-of-map-to-cover-all-visible-markers
-            // Submitted by user: https://stackoverflow.com/users/954940/adam
         }
     };
 
@@ -611,13 +603,13 @@ const scriptures = (function () {
     };
 
     showNextPrev = function(bookId, chapter) {
-        document.querySelector('#navButtons')
+        document.querySelector('#pageButtons')
             .innerHTML = `
-                            <div id='prev'>
+                            <div id='previous'>
                                 <i class="material-icons">
                                 navigate_before
                                 </i>
-                                <span>Prev</span>
+                                <span>Back</span>
                             </div>
                             <div id='next'>
                                 <span>Next</span>
@@ -626,23 +618,22 @@ const scriptures = (function () {
                                 </i>
                             </div>
                         `;
-        document.querySelector('#navButtons').style.height = '46px';
-        document.querySelector('#navButtons').style.borderBottom = '1px solid #eee';
+        document.querySelector('#pageButtons').style.height = '46px';
+        document.querySelector('#pageButtons').style.borderBottom = '1px solid #eee';
         document.querySelector('#scriptures').style.height = 'calc(100% - 46px)';
 
-        // NEED TO ADJUST THIS TO CHANGE THE HASH BUT ALSO JUST SLIDE IN THE NEXT CHAPTER
         document.querySelector('#next').addEventListener('click', () => {
             let next = nextChapter(bookId, chapter);
             let nextChap = nextChapter(next[1], next[2]);
 
             if (nextChap !== undefined && !transitioning) {
                 transitioning = true;
-                let prev_el = document.querySelector('.prev_chap');
+                let prev_el = document.querySelector('.prevChap');
                 let curr_el = document.querySelector('.curr_chap');
-                let next_el = document.querySelector('.next_chap');
+                let next_el = document.querySelector('.nextChap');
 
                     prev_el.addEventListener('transitionend', function handler() {
-                        prev_el.classList.replace('prev_chap', 'next_chap');
+                        prev_el.classList.replace('prevChap', 'nextChap');
                         prev_el.classList.remove('slide');
                         transitionComplete(nextChap[1], nextChap[2], getNextCallback);
                         this.removeEventListener('transitionend', handler);
@@ -650,14 +641,14 @@ const scriptures = (function () {
 
                     next_el.addEventListener('transitionend', function handler() {
                         
-                        next_el.classList.replace('next_chap', 'curr_chap');
+                        next_el.classList.replace('nextChap', 'curr_chap');
                         next_el.classList.remove('slide');
                         transitionComplete(nextChap[1], nextChap[2], getNextCallback);
                         this.removeEventListener('transitionend', handler);
                     });
 
                     curr_el.addEventListener('transitionend', function handler() {
-                        curr_el.classList.replace('curr_chap', 'prev_chap');
+                        curr_el.classList.replace('curr_chap', 'prevChap');
                         curr_el.classList.remove('slide');
                         transitionComplete(nextChap[1], nextChap[2], getNextCallback);
                         this.removeEventListener('transitionend', handler);
@@ -674,40 +665,40 @@ const scriptures = (function () {
             }
         });
 
-        // NEED TO ADJUST THIS TO CHANGE THE HASH BUT ALSO JUST SLIDE IN THE PREV CHAPTER
-        document.querySelector('#prev').addEventListener('click', () => {
+ 
+        document.querySelector('#previous').addEventListener('click', () => {
             let prev = previousChapter(bookId, chapter);
             let prevChap = previousChapter(prev[1], prev[2]);
             if (prevChap !== undefined && !transitioning) {
                 transitioning = true;
-                let prev_el = document.querySelector('.prev_chap');
+                let prev_el = document.querySelector('.prevChap');
                 let curr_el = document.querySelector('.curr_chap');
-                let next_el = document.querySelector('.next_chap');
+                let next_el = document.querySelector('.nextChap');
 
                 prev_el.addEventListener('transitionend', function handler() {
-                    prev_el.classList.replace('prev_chap', 'curr_chap');
-                    prev_el.classList.remove('slide_prev');
+                    prev_el.classList.replace('prevChap', 'curr_chap');
+                    prev_el.classList.remove('slideOld');
                     transitionComplete(prevChap[1], prevChap[2], getPrevCallback);
                     this.removeEventListener('transitionend', handler);
                 });
 
                 next_el.addEventListener('transitionend', function handler() {
                     
-                    next_el.classList.replace('next_chap', 'prev_chap');
-                    next_el.classList.remove('slide_prev');
+                    next_el.classList.replace('nextChap', 'prevChap');
+                    next_el.classList.remove('slideOld');
                     transitionComplete(prevChap[1], prevChap[2], getPrevCallback);
                     this.removeEventListener('transitionend', handler);
                 });
 
                 curr_el.addEventListener('transitionend', function handler() {
-                    curr_el.classList.replace('curr_chap', 'next_chap');
-                    curr_el.classList.remove('slide_prev');
+                    curr_el.classList.replace('curr_chap', 'nextChap');
+                    curr_el.classList.remove('slideOld');
                     transitionComplete(prevChap[1], prevChap[2], getPrevCallback);
                     this.removeEventListener('transitionend', handler);
                 });
 
                 document.querySelectorAll('.chap').forEach(chap => {
-                    chap.classList.add('slide_prev');
+                    chap.classList.add('slideOld');
                 });
                 location.hash = `#${prev[0]}:${prev[1]}:${prev[2]}`;
                 setupMarkers();
